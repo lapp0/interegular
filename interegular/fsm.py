@@ -966,6 +966,16 @@ def crawl_hash_no_result(alphabet, initial, final, follow):
                     unvisited.add(new)
 
 
+def anyhash(obj):
+    if isinstance(obj, dict):
+        # Create a tuple of sorted key-value pairs for hashability
+        return hash(tuple(sorted(obj.items())))
+    elif isinstance(obj, set):
+        return hash(frozenset(obj))
+    else:
+        return hash(obj)
+
+
 def crawl(alphabet, initial, final, follow):
     """
         Given the above conditions and instructions, crawl a new unknown FSM,
@@ -977,6 +987,8 @@ def crawl(alphabet, initial, final, follow):
     states = [initial]
     finals = set()
     map = {}
+
+    first_state_occurrence_idx = {}
 
     # iterate over a growing list
     i = 0
@@ -996,10 +1008,10 @@ def crawl(alphabet, initial, final, follow):
                 # Reached an oblivion state. Don't list it.
                 continue
             else:
-                try:
-                    j = states.index(next)
-                except ValueError:
+                j = first_state_occurrence_idx.get(anyhash(next))
+                if j is None:
                     j = len(states)
+                    first_state_occurrence_idx[anyhash(next)] = j
                     states.append(next)
                 map[i][transition] = j
 
